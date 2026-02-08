@@ -8,6 +8,8 @@ import { generateInstrument } from './services/geminiService';
 import RubricCreator from './components/RubricCreator';
 import ChecklistCreator from './components/ChecklistCreator';
 import ExamCreator from './components/ExamCreator';
+import EscalaCreator from './components/EscalaCreator';
+import GuiaObservacionCreator from './components/GuiaObservacionCreator';
 import Toast from './components/Toast';
 
 const App: React.FC = () => {
@@ -21,6 +23,8 @@ const App: React.FC = () => {
   const [rubricData, setRubricData] = useState<RubricData | null>(null);
   const [checklistData, setChecklistData] = useState<ChecklistData | null>(null);
   const [examData, setExamData] = useState<ExamData | null>(null);
+  const [escalaData, setEscalaData] = useState<any | null>(null);
+  const [guiaData, setGuiaData] = useState<any | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
@@ -49,7 +53,17 @@ const App: React.FC = () => {
           title: result.title,
           subject: aiConfig.subject,
           level: aiConfig.level,
-          items: result.items.map((it: string, i: number) => ({ id: `i-${Date.now()}-${i}`, text: it }))
+          items: result.items.map((it: string, i: number) => ({ id: `i-${Date.now()}-${i}`, text: it, checked: false }))
+        });
+      } else if (activeTab === InstrumentType.ESCALA) {
+        setEscalaData({
+          title: result.title,
+          items: result.items.map((it: string, i: number) => ({ id: `e-${Date.now()}-${i}`, text: it, value: 0 }))
+        });
+      } else if (activeTab === InstrumentType.GUIA_OBSERVACION) {
+        setGuiaData({
+          title: result.title,
+          aspects: result.aspects.map((a: any, i: number) => ({ ...a, id: `g-${Date.now()}-${i}`, notes: "" }))
         });
       } else if (activeTab === InstrumentType.EXAMEN) {
         setExamData({
@@ -66,11 +80,6 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  // Limpiar datos al cambiar de tipo si no hay nada guardado o para forzar nueva creación
-  useEffect(() => {
-    // Podríamos decidir resetear o mantener. Por ahora mantenemos lo último creado.
-  }, [activeTab]);
 
   return (
     <div className="min-h-screen pb-12 bg-[#0A0E27]">
@@ -126,7 +135,6 @@ const App: React.FC = () => {
 
         {/* Content Area */}
         <div className="lg:col-span-3 space-y-8">
-          {/* AI Generator Panel */}
           {isAiMode && (
             <section className="bg-gradient-to-br from-blue-950/40 via-slate-900 to-slate-900 p-8 rounded-[2rem] border-2 border-blue-500/20 shadow-2xl animate-in zoom-in-95 duration-500">
               <div className="flex items-center gap-4 mb-8">
@@ -208,29 +216,22 @@ const App: React.FC = () => {
                   <ExamCreator data={examData} setData={setExamData} showToast={showToast} />
                 )}
                 {activeTab === InstrumentType.ESCALA && (
-                  <div className="text-center py-32">
-                    <div className="text-6xl mb-6 grayscale opacity-20">📈</div>
-                    <p className="text-slate-500 font-bold uppercase tracking-widest">Escala de Valoración en construcción</p>
-                  </div>
+                  <EscalaCreator data={escalaData} setData={setEscalaData} showToast={showToast} />
                 )}
                 {activeTab === InstrumentType.GUIA_OBSERVACION && (
-                  <div className="text-center py-32">
-                    <div className="text-6xl mb-6 grayscale opacity-20">👁️</div>
-                    <p className="text-slate-500 font-bold uppercase tracking-widest">Guía de Observación próximamente</p>
-                  </div>
+                  <GuiaObservacionCreator data={guiaData} setData={setGuiaData} showToast={showToast} />
                 )}
              </div>
           </div>
         </div>
       </main>
 
-      {/* Toast Notifier */}
       {toast && <Toast message={toast.message} type={toast.type} />}
 
       <footer className="max-w-7xl mx-auto px-6 mt-24 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-slate-500 text-xs gap-4">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>Sistema Educativo Activo (Gemini 2.5 Flash)</span>
+          <span>Sistema Educativo Activo (Gemini 3 Flash)</span>
         </div>
         <p className="font-bold">© {new Date().getFullYear()} EduEval AI · Herramienta para Docentes</p>
       </footer>

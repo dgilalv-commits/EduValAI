@@ -30,10 +30,10 @@ export const generateInstrument = async (type: InstrumentType, params: { level: 
               levels: {
                 type: Type.OBJECT,
                 properties: {
-                  4: { type: Type.STRING, description: 'Excelente' },
-                  3: { type: Type.STRING, description: 'Bueno' },
-                  2: { type: Type.STRING, description: 'Satisfactorio' },
-                  1: { type: Type.STRING, description: 'Necesita mejorar' }
+                  4: { type: Type.STRING },
+                  3: { type: Type.STRING },
+                  2: { type: Type.STRING },
+                  1: { type: Type.STRING }
                 }
               }
             }
@@ -42,8 +42,7 @@ export const generateInstrument = async (type: InstrumentType, params: { level: 
       }
     };
   } else if (type === InstrumentType.LISTA_COTEJO) {
-    prompt = `Genera una lista de cotejo (Checklist) para evaluar ${topic} en ${subject} para ${level}. 
-    Incluye 10 indicadores claros y observables.`;
+    prompt = `Genera una lista de cotejo (Checklist) para evaluar ${topic} en ${subject} para ${level}. Incluye 10 indicadores claros y observables que se puedan marcar como Sí/No.`;
     
     schema = {
       type: Type.OBJECT,
@@ -55,10 +54,45 @@ export const generateInstrument = async (type: InstrumentType, params: { level: 
         }
       }
     };
+  } else if (type === InstrumentType.ESCALA) {
+    prompt = `Genera una Escala de Valoración (Rating Scale) numérica (1 al 5) para evaluar ${topic} en ${subject} para el nivel ${level}. Incluye 8-10 indicadores de desempeño específicos.`;
+    
+    schema = {
+      type: Type.OBJECT,
+      properties: {
+        title: { type: Type.STRING },
+        items: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING }
+        }
+      }
+    };
+  } else if (type === InstrumentType.GUIA_OBSERVACION) {
+    prompt = `Genera una Guía de Observación profesional para el docente sobre el tema "${topic}" en "${subject}" para "${level}". 
+    Para cada uno de los 6 aspectos fundamentales, proporciona:
+    1. Un indicador claro.
+    2. Una descripción pedagógica.
+    3. Ejemplos específicos y concretos de conductas, comentarios o evidencias que el docente debería buscar durante la observación.`;
+    
+    schema = {
+      type: Type.OBJECT,
+      properties: {
+        title: { type: Type.STRING },
+        aspects: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              indicator: { type: Type.STRING },
+              description: { type: Type.STRING },
+              examples: { type: Type.STRING, description: "Ejemplos específicos de conductas o evidencias a observar." }
+            }
+          }
+        }
+      }
+    };
   } else if (type === InstrumentType.EXAMEN) {
-    prompt = `Genera un examen estructurado sobre ${topic} para ${subject} (${level}). 
-    Incluye 10 preguntas variadas (opción múltiple, V/F y desarrollo). 
-    Asigna puntos a cada pregunta que sumen un total de 10 o el valor que consideres, pero indica los puntos claramente.`;
+    prompt = `Genera un examen estructurado sobre ${topic} para ${subject} (${level}). Incluye 10 preguntas variadas (opción múltiple, V/F y desarrollo).`;
     
     schema = {
       type: Type.OBJECT,
@@ -78,10 +112,6 @@ export const generateInstrument = async (type: InstrumentType, params: { level: 
         }
       }
     };
-  } else {
-      // Fallback simple for other types
-      prompt = `Genera un instrumento de evaluación de tipo ${type} para ${topic} en ${subject} (${level}).`;
-      schema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, items: { type: Type.ARRAY, items: { type: Type.STRING } } } };
   }
 
   try {
